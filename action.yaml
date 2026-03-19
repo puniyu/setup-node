@@ -1,0 +1,65 @@
+name: 'setup-node'
+author: 'puniyu'
+description: '设置Node作'
+
+inputs:
+  registry-url:
+    default: 'https://registry.npmjs.org'
+    required: false
+    type: string
+    description: 'Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN.'
+  scope:
+    required: false
+    type: string
+    description: 'Optional scope for authenticating against scoped registries. Will fall back to the repository owner when using the GitHub Packages registry (https://npm.pkg.github.com/).'
+  architecture:
+    required: false
+    description: 'Optional architecture for Node.js (e.g., x64, arm64). If not specified, defaults to the runner architecture.'
+  pnpm_version:
+    required: false
+    type: string
+    description: 'Optional pnpm version to install. If not specified, will use the latest available version.'
+
+
+
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check File
+      id: check_file
+      uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3
+      with:
+        files: ".node-version"
+
+    - name: Get Node Version
+      shell: bash
+      id: node_version
+      if: steps.check_file.outputs.files_exists == 'true'
+      run: |
+        VERSION=$(cat .node-version | tr -d '\r\n')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+
+    - name: Install Nodejs Toolchain
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version || steps.node_version.outputs.version || 'lts/*' }}
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.scope }}
+        architecture: ${{ inputs.architecture }}
+        package-manager-cache: false
+
+    - name: Remove packageManager from package.json
+      if: ${{ inputs.pnpm_version }}
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq eval 'del(.packageManager)' package.json -i
+
+    - name: Setup pnpm
+      if: ${{ inputs.pnpm_version }}
+      uses: pnpm/action-setup@4
+      with:
+        version: ${{ inputs.pnpm_version || 10 }}
+        run_install: false
+        cache: true
