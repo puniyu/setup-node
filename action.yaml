@@ -50,16 +50,31 @@ runs:
         architecture: ${{ inputs.architecture }}
         package-manager-cache: false
 
-    - name: Remove packageManager from package.json
-      if: ${{ inputs.pnpm_version }}
+    - name: Get packageManager Version
+      id: packageManager_version
       uses: mikefarah/yq@master
       with:
-        cmd: yq eval 'del(.packageManager)' package.json -i
+        cmd: yq '.packageManager' package.json
+
+    - name: Get pnpm Version
+      id: pnpm_version
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.pnpm_version }}" ]; then
+          VERSION="${{ inputs.pnpm_version }}"
+        else
+          PM="${{ steps.packageManager_version.outputs.result }}"
+          if [[ "$PM" == pnpm@* ]]; then
+            VERSION="${PM#pnpm@}"
+          else
+            VERSION=10
+          fi
+        fi
+        echo "pnpm_version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Setup pnpm
-      if: ${{ inputs.pnpm_version }}
       uses: pnpm/action-setup@4
       with:
-        version: ${{ inputs.pnpm_version || 10 }}
+        version: ${{ steps.pnpm_version.outputs.pnpm_version }}
         run_install: false
         cache: true
