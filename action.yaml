@@ -50,7 +50,14 @@ runs:
         architecture: ${{ inputs.architecture }}
         package-manager-cache: false
 
+    - name: Remove packageManager field
+      if: inputs.pnpm_version
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq -i 'del(.packageManager)' package.json
+
     - name: Get packageManager Version
+      if: inputs.pnpm_version == ''
       id: packageManager_version
       uses: mikefarah/yq@master
       with:
