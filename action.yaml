@@ -54,18 +54,19 @@ runs:
         architecture: ${{ inputs.architecture }}
         package-manager-cache: false
 
+    - name: Setup yq
+      uses: frenck/action-setup-yq@v1
+
     - name: Remove packageManager field
+      shell: bash
       if: inputs.pnpm-version
-      uses: mikefarah/yq@master
-      with:
-        cmd: yq -i 'del(.packageManager)' package.json
+      run: yq -i 'del(.packageManager)' package.json
 
     - name: Get packageManager Version
+      shell: bash
       if: inputs.pnpm-version == ''
       id: packageManager-version
-      uses: mikefarah/yq@master
-      with:
-        cmd: yq '.packageManager' package.json
+      run: yq '.packageManager' package.json
 
     - name: Get pnpm Version
       id: pnpm-version
