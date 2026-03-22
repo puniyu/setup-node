@@ -19,7 +19,7 @@ inputs:
   architecture:
     required: false
     description: 'Optional architecture for Node.js (e.g., x64, arm64). If not specified, defaults to the runner architecture.'
-  pnpm_version:
+  pnpm-version:
     required: false
     type: string
     description: 'Optional pnpm version to install. If not specified, will use the latest available version.'
@@ -61,31 +61,31 @@ runs:
         cmd: yq -i 'del(.packageManager)' package.json
 
     - name: Get packageManager Version
-      if: inputs.pnpm_version == ''
-      id: packageManager_version
+      if: inputs.pnpm-version == ''
+      id: packageManager-version
       uses: mikefarah/yq@master
       with:
         cmd: yq '.packageManager' package.json
 
     - name: Get pnpm Version
-      id: pnpm_version
+      id: pnpm-version
       shell: bash
       run: |
-        if [ -n "${{ inputs.pnpm_version }}" ]; then
-          VERSION="${{ inputs.pnpm_version }}"
+        if [ -n "${{ inputs.pnpm-version }}" ]; then
+          VERSION="${{ inputs.pnpm-version }}"
         else
-          PM="${{ steps.packageManager_version.outputs.result }}"
+          PM="${{ steps.packageManager-version.outputs.result }}"
           if [[ "$PM" == pnpm@* ]]; then
             VERSION="${PM#pnpm@}"
           else
-            VERSION=10
+            VERSION=latest
           fi
         fi
-        echo "pnpm_version=$VERSION" >> $GITHUB_OUTPUT
+        echo "pnpm-version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Setup pnpm
-      uses: pnpm/action-setup@4
+      uses: pnpm/action-setup@v4
       with:
-        version: ${{ steps.pnpm_version.outputs.pnpm_version }}
+        version: ${{ steps.pnpm_version.outputs.pnpm-version }}
         run_install: false
         cache: true
