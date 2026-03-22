@@ -55,7 +55,7 @@ runs:
         package-manager-cache: false
 
     - name: Remove packageManager field
-      if: inputs.pnpm_version
+      if: inputs.pnpm-version
       uses: mikefarah/yq@master
       with:
         cmd: yq -i 'del(.packageManager)' package.json
@@ -86,6 +86,6 @@ runs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
-        version: ${{ steps.pnpm_version.outputs.pnpm-version }}
+        version: ${{ steps.pnpm-version.outputs.pnpm-version }}
         run_install: false
         cache: true
