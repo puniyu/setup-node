@@ -3,6 +3,10 @@ author: 'puniyu'
 description: '设置Node作'
 
 inputs:
+  node-version:
+    required: false
+    type: string
+    description: 'Node.js version to use'
   registry-url:
     default: 'https://registry.npmjs.org'
     required: false
