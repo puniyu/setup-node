@@ -55,7 +55,9 @@ runs:
         package-manager-cache: false
 
     - name: Setup yq
-      uses: frenck/action-setup-yq@v1
+      uses: dcarbone/install-yq-action@v1
+      with:
+        force: true
 
     - name: Remove packageManager field
       shell: bash
@@ -89,4 +91,17 @@ runs:
       with:
         version: ${{ steps.pnpm-version.outputs.pnpm-version }}
         run_install: false
-        cache: true
+
+    - name: Get pnpm store directory
+      id: store
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+    - name: Save Cache
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      with:
+        path: ${{ steps.store.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
