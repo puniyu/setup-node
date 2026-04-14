@@ -63,14 +63,20 @@ runs:
       with:
         force: true
 
+    - name: Check package.json file
+      id: check_package_json
+      uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3
+      with:
+        files: "package.json"
+
     - name: Remove packageManager field
       shell: bash
-      if: inputs.pnpm-version
+      if: inputs.pnpm-version && steps.check_package_json.outputs.files_exists == 'true'
       run: yq -i 'del(.packageManager)' package.json
 
     - name: Get packageManager Version
       shell: bash
-      if: inputs.pnpm-version == ''
+      if: inputs.pnpm-version == '' && steps.check_package_json.outputs.files_exists == 'true'
       id: packageManager-version
       run: yq '.packageManager' package.json
 
@@ -80,13 +86,15 @@ runs:
       run: |
         if [ -n "${{ inputs.pnpm-version }}" ]; then
           VERSION="${{ inputs.pnpm-version }}"
-        else
+        elif [ "${{ steps.check_package_json.outputs.files_exists }}" = 'true' ]; then
           PM="${{ steps.packageManager-version.outputs.result }}"
           if [[ "$PM" == pnpm@* ]]; then
             VERSION="${PM#pnpm@}"
           else
             VERSION=latest
           fi
+        else
+          VERSION=latest
         fi
         echo "pnpm-version=$VERSION" >> $GITHUB_OUTPUT
 
