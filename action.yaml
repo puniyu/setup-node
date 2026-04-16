@@ -50,7 +50,7 @@ runs:
       
 
     - name: Install Nodejs Toolchain
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
       with:
         node-version: ${{ inputs.node-version || steps.node_version.outputs.version || 'lts/*' }}
         registry-url: ${{ inputs.registry-url }}
@@ -59,7 +59,7 @@ runs:
         package-manager-cache: false
 
     - name: Setup yq
-      uses: dcarbone/install-yq-action@v1
+      uses: dcarbone/install-yq-action@4075b4dca348d74bd83f2bf82d30f25d7c54539b # v1
       with:
         force: true
 
@@ -99,7 +99,7 @@ runs:
         echo "pnpm-version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       with:
         version: ${{ steps.pnpm-version.outputs.pnpm-version }}
         run_install: false
